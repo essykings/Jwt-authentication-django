@@ -13,23 +13,16 @@ from rest_framework.generics import ListCreateAPIView, RetrieveUpdateAPIView
 from rest_framework.views import APIView
 from rest_framework_jwt.utils import jwt_payload_handler
 
-import jwt
 
 from .serializers import UserSerializer
 from django.conf import settings
 from .models import User
-
-
-class UsersCreateView(ListCreateAPIView):
-    serializer_class = UserSerializer
-    queryset = User.objects.all()
-    permission_classes = (AllowAny,)
+import jwt
 
 
 class CreateUserAPIView(APIView):
     # Allow any user (authenticated or not) to access this url
-    # permission_classes = (AllowAny,)
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (AllowAny,)
 
     def post(self, request):
         user = request.data
@@ -43,11 +36,9 @@ class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
 
     # Allow only authenticated users to access this url
     permission_classes = (IsAuthenticated,)
-
     serializer_class = UserSerializer
 
     def get(self, request, *args, **kwargs):
-        # There is nothing to validate or save here. Instead, we just want the
         # serializer to handle turning our `User` object into something that
         # can be JSONified and sent to the client.
         serializer = self.serializer_class(request.user)
@@ -71,10 +62,10 @@ class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
 def authenticate_user(request):
 
     try:
-        username = request.data['username']
+        email = request.data['email']
         password = request.data['password']
 
-        user = User.objects.get(username=username, password=password)
+        user = User.objects.get(email=email, password=password)
         if user:
             try:
                 payload = jwt_payload_handler(user)
@@ -94,5 +85,5 @@ def authenticate_user(request):
                 'error': 'can not authenticate with the given credentials or the account has been deactivated'}
             return Response(res, status=status.HTTP_403_FORBIDDEN)
     except KeyError:
-        res = {'error': 'please provide a username and a password'}
-        return Respons
+        res = {'error': 'please provide a email and a password'}
+        return Response(res)
